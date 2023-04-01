@@ -26,9 +26,9 @@ class Retinex_Decomposition_net(nn.Module):
         return x
 
 
-class IIllumination_Correction(nn.Module):
+class Illumination_Correction(nn.Module):
     def __init__(self, in_channels=2, out_channels=1):
-        super(IIllumination_Correction, self).__init__()
+        super(Illumination_Correction, self).__init__()
         self.down_1 = nn.Conv2d(in_channels, 32, kernel_size=3, stride=2)
         self.down_2 = nn.Conv2d(32, 64, kernel_size=3, stride=2)
         self.down_3 = nn.Conv2d(64, 128, kernel_size=3, stride=2)
