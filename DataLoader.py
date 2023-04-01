@@ -6,8 +6,9 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 import os
 
+
 def get_transform_0():
-    transform =  transforms.Compose([
+    transform = transforms.Compose([
         # RGB转化为LAB
         transforms.Lambda(lambda x: cv2.cvtColor(x, cv2.COLOR_RGB2LAB)),
         # 只保留L通道
@@ -16,13 +17,23 @@ def get_transform_0():
     ])
     return transform
 
+def get_transform_1():
+    transform = transforms.Compose([
+        # RGB转化为LAB
+        transforms.Lambda(lambda x: cv2.cvtColor(x, cv2.COLOR_RGB2LAB)),
+        # 只保留AB通道
+        transforms.Lambda(lambda x: x[:, :, 1:]),
+        transforms.ToTensor(),
+    ])
+    return transform
 
 
 # 分解数据集，以及I_delight部分的数据集
 class retinex_decomposition_data(Dataset):
     def __init__(self, I_no_light_path, I_light_path):
         self.I_light_imglist = self.get_path(I_light_path)
-        self.I_no_light_imglist = [os.path.join(I_no_light_path, os.path.basename(img_path)) for img_path in self.I_light_imglist]
+        self.I_no_light_imglist = [os.path.join(I_no_light_path, os.path.basename(img_path)) for img_path in
+                                   self.I_light_imglist]
         self.transform = get_transform_0()
 
     def get_path(self, path):
@@ -62,9 +73,29 @@ class retinex_decomposition_data(Dataset):
 
         return I_no_AL_tensor, I_AL_tensor
 
+# AL区域自导向色彩恢复模块数据集
+class AL_data(Dataset):
+    def __init__(self, ABcc_path, gt_path):
+        self.ABcc_imglist = self.get_path(ABcc_path)
+        # gt_name是basename的_前面的部分
+        self.gt_imglist = [os.path.join(gt_path, os.path.basename(img_path).split("_")[0]+'.bmp') for img_path in self.ABcc_imglist]
+        print(self.gt_imglist)
+        self.transform = get_transform_1()
+
+    def get_path(self, path):
+        img_name_list = sorted(os.listdir(path))
+        img_list = []
+        for img_name in img_name_list:
+            img_list.append(os.path.join(path, img_name))
+        return img_list
+
+
+
+
 
 if __name__ == "__main__":
-    # 使用retinex_decomposition_data(Dataset)随机取出一组查看
+    '''
+    # 使用retinex_decomposition_data(Dataset)随机取出一组查看  
     I_no_light_path = r"./dataset/UIALN_datasest/train_data/dataset_no_AL"
     I_light_path = r"./dataset/UIALN_datasest/train_data/dataset_with_AL/train"
     dataset = retinex_decomposition_data(I_no_light_path, I_light_path)
@@ -73,5 +104,4 @@ if __name__ == "__main__":
     I_no_AL_img = transforms.ToPILImage()(I_no_AL_tensor)
     I_AL_img = transforms.ToPILImage()(I_AL_tensor)
     I_no_AL_img.show()
-    I_AL_img.show()
-
+    I_AL_img.show()'''
