@@ -79,7 +79,6 @@ class AL_data(Dataset):
         self.ABcc_imglist = self.get_path(ABcc_path)
         # gt_name是basename的_前面的部分
         self.gt_imglist = [os.path.join(gt_path, os.path.basename(img_path).split("_")[0]+'.bmp') for img_path in self.ABcc_imglist]
-        print(self.gt_imglist)
         self.transform = get_transform_1()
 
     def get_path(self, path):
@@ -89,8 +88,35 @@ class AL_data(Dataset):
             img_list.append(os.path.join(path, img_name))
         return img_list
 
+    def __len__(self):
+        return len(self.ABcc_imglist)
 
+    def __getitem__(self, index):
+        ABcc_img_path = self.ABcc_imglist[index]
+        gt_img_path = self.gt_imglist[index]
 
+        ABcc_img = cv2.imread(ABcc_img_path, cv2.IMREAD_COLOR)
+        gt_img = cv2.imread(gt_img_path, cv2.IMREAD_COLOR)
+
+        # 检查图片是否读取成功
+        if ABcc_img is None or gt_img is None:
+            print(index)
+            print(ABcc_img_path)
+            print(gt_img_path)
+            print("Error: 图片读取失败")
+            exit(0)
+
+        ABcc_img = cv2.cvtColor(ABcc_img, cv2.COLOR_BGR2RGB)
+        gt_img = cv2.cvtColor(gt_img, cv2.COLOR_BGR2RGB)
+
+        seed = torch.random.seed()
+
+        torch.random.manual_seed(seed)
+        ABcc_tensor = self.transform(ABcc_img)
+        torch.random.manual_seed(seed)
+        gt_tensor = self.transform(gt_img)
+
+        return ABcc_tensor, gt_tensor
 
 
 if __name__ == "__main__":
@@ -105,3 +131,14 @@ if __name__ == "__main__":
     I_AL_img = transforms.ToPILImage()(I_AL_tensor)
     I_no_AL_img.show()
     I_AL_img.show()'''
+
+    # 使用AL_data(Dataset)随机取出一组查看
+    ABcc_path = r"./dataset/UIALN_datasest/train_data/dataset_with_AL/train"
+    gt_path = r"./dataset/UIALN_datasest/train_data/labels/raw"
+    dataset = AL_data(ABcc_path, gt_path)
+    ABcc_tensor, gt_tensor = dataset[90]
+    # 转化为image
+    ABcc_img = transforms.ToPILImage()(ABcc_tensor)
+    gt_img = transforms.ToPILImage()(gt_tensor)
+    ABcc_img.show()
+    gt_img.show()
