@@ -18,7 +18,7 @@ def get_transform_0():
 
 
 
-# 分解数据集
+# 分解数据集，以及I_delight部分的数据集
 class retinex_decomposition_data(Dataset):
     def __init__(self, I_no_light_path, I_light_path):
         self.I_light_imglist = self.get_path(I_light_path)
