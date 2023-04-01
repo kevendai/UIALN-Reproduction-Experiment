@@ -79,7 +79,8 @@ class AL_data(Dataset):
         self.ABcc_imglist = self.get_path(ABcc_path)
         # gt_name是basename的_前面的部分
         self.gt_imglist = [os.path.join(gt_path, os.path.basename(img_path).split("_")[0]+'.bmp') for img_path in self.ABcc_imglist]
-        self.transform = get_transform_1()
+        self.transform_1 = get_transform_1()
+        self.transform_0 = get_transform_0()
 
     def get_path(self, path):
         img_name_list = sorted(os.listdir(path))
@@ -112,11 +113,13 @@ class AL_data(Dataset):
         seed = torch.random.seed()
 
         torch.random.manual_seed(seed)
-        ABcc_tensor = self.transform(ABcc_img)
+        ABcc_tensor = self.transform_1(ABcc_img)
         torch.random.manual_seed(seed)
-        gt_tensor = self.transform(gt_img)
+        gt_tensor = self.transform_1(gt_img)
+        torch.random.manual_seed(seed)
+        L_tensor = self.transform_0(ABcc_img)
 
-        return ABcc_tensor, gt_tensor
+        return ABcc_tensor, gt_tensor, L_tensor
 
 
 if __name__ == "__main__":
